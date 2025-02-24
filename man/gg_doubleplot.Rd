@@ -28,7 +28,8 @@ by \link{LightLogR}, take care to choose a sensible variable for the
 
 \item{Datetime.colname}{column name that contains the datetime. Defaults to
 \code{"Datetime"} which is automatically correct for data imported with
-\link{LightLogR}. Expects a \code{symbol}. Needs to be part of the \code{dataset}.}
+\link{LightLogR}. Expects a \code{symbol}. Needs to be part of the \code{dataset}. Must
+be of type \code{POSIXct}.}
 
 \item{type}{One of "auto", "repeat", or "next". The default is "auto", which will automatically select the best way to display the double date plot based on the amount of days in the dataset (\verb{all = 1 >> "repeat", else "next}). "repeat" will repeat each day in the plot, and "next" will display consecutive days.}
 
@@ -69,6 +70,8 @@ sample.data \%>\% gg_doubleplot()
 #repeat the same day in the plot
 sample.data \%>\% gg_doubleplot(type = "repeat")
 
+#more examples that are not executed for computation time:
+\donttest{
 #use the function with more than one Id
 sample.data.environment \%>\% 
 filter_Date(length = ddays(3)) \%>\% 
@@ -88,4 +91,5 @@ facet_wrap(~ Date.data, ncol = 1, scales = "free_x", strip.position = "left")
 sample.data.environment \%>\%
 aggregate_Date() \%>\%
 gg_doubleplot()
+}
 }

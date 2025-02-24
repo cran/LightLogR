@@ -2,7 +2,7 @@
 #'
 #' A subset of data from a study at the TSCN-Lab using the ActLumus light
 #' logger. This dataset contains personal light exposure information for one
-#' participant over the course of five full days. The dataset is measured with a
+#' participant over the course of six full days. The dataset is measured with a
 #' 10 second epoch and is complete (no missing values). Additionally
 #' environmental light data was captured with a second light logger mounted
 #' horizontally at the TUM university roof, without any obstructions (besides a
@@ -19,30 +19,22 @@
 #' @source <https://www.tscnlab.org>
 "sample.data.environment"
 
-
-#' A vector of all supported devices for import functions
+#' Gain / Gain-ratio tables to normalize counts
 #'
-#' These are all supported devices where there is a dedicated import function.
-#' Import functions can be called either through [import_Dataset()] with the
-#' respective `device = "device"` argument, or directly, e.g.,
-#' `import$ActLumus()`.
+#' A list of tables containing gain and gain-ratios to normalize counts across
+#' different sensor gains. 
+#' 
+#' **Utility:** Some sensors provide raw counts and gain levels as
+#' part of their output. In some cases it is desirable to compare counts between
+#' sensors, e.g., to gauge daylight outside by comparing UV counts to photopic
+#' counts (a high ratio of UV/Pho indicates outside daylight). Or to gauge 
+#' daylight inside by comparing IR counts to photopic counts (a high ratio of
+#' IR/Pho with a low ratio of UV/Pho indicates daylight in the context of LED or
+#' fluorescent lighting)
 #'
-#' @format `supported.devices` A character vector, listing all supported devices
+#' @format `gain.ratio.tables` A list containing two-column tibbles
 #' \describe{
-#'   \item{suppored.devices}{strings}
+#'   \item{TSL2585}{gain table for the ambient light sensor [TSL2585](https://look.ams-osram.com/m/7899f3742d5a3f00/original/TSL2585-Miniature-Ambient-Light-Sensor-with-UV-and-Light-Flicker-Detection.pdf)}
+#'   \item{Info}{A named `character` vector specifying the version and date a sensor was added}
 #' }
-"supported.devices"
-
-#' A list of the specific device import functions
-#'
-#' These expressions are used to import and prepare data from specific devices.
-#' The list is made explicit, so that a user, requiring slight changes to the
-#' import functions, (e.g., because a timestamp is formatted differently) can
-#' modify or add to the list. The list can be turned into a fully functional 
-#' import function through `import_adjustment()`.
-#'
-#' @format `ll_import_expr` A list, with specific expressions for each supported device
-#' \describe{
-#'   \item{ll_import_expr}{expressions}
-#' }
-"ll_import_expr"
+"gain.ratio.tables"
