@@ -10,6 +10,14 @@
 #' (`dominant.epoch`) in every group. [aggregate_Date()] is especially useful
 #' for summary plots that show an average day.
 #'
+#' Summary values for type `POSIXct` are calculated as the median, because the
+#' mean can be nonsensical at times (e.g., the mean of Day1 18:00 and Day2
+#' 18:00, is Day2 6:00, which can be the desired result, but if the focus is on
+#' time, rather then on datetime, it is recommended that values are converted to
+#' times via [hms::as_hms()] before applying the function (the mean of 18:00 and
+#' 18:00 is still 18:00, not 6:00). Using the median as a default handler
+#' ensures a more sensible datetime.
+#'
 #' @inheritParams aggregate_Datetime
 #' @param unit Unit of binning. See [lubridate::round_date()] for examples. The
 #'   default is `"none"`, which will not aggregate the data at all, but is only
@@ -26,7 +34,7 @@
 #'   columns will be the same as in the input `dataset`.
 #'
 #' @details [aggregate_Date()] splits the `Datetime` column into a `Date.data`
-#'   and a `Time.data` column. It will create subgroups for each `Time.data`
+#'   and a `Time` column. It will create subgroups for each `Time`
 #'   present in a group and aggregate each group into a single day, then remove
 #'   the sub grouping.
 #'
@@ -84,6 +92,10 @@ aggregate_Date <- function(dataset,
                            factor.handler = 
                                  \(x) factor(names(which.max(table(x, useNA = "ifany")))),
                            datetime.handler = stats::median,
+                           duration.handler = 
+                                 \(x) lubridate::duration(mean(x)),
+                           time.handler = 
+                                 \(x) hms::as_hms(mean(x)),
                                ...) {
   
   # Initial Checks ----------------------------------------------------------
@@ -114,6 +126,8 @@ aggregate_Date <- function(dataset,
                          logical.handler = logical.handler,
                          factor.handler = factor.handler,
                          datetime.handler = datetime.handler,
+                         duration.handler = duration.handler,
+                         time.handler = time.handler,
                          ...
                          )
 
@@ -121,14 +135,14 @@ aggregate_Date <- function(dataset,
 
   dataset <- 
     dataset %>% 
-    create_Timedata(Datetime.colname = !!Datetime.colname.defused) %>% 
+    add_Time_col(Datetime.colname = !!Datetime.colname.defused) %>% 
     dplyr::mutate(Date.data = lubridate::date(!!Datetime.colname.defused),
                   Date.data = (!!date.handler)(Date.data)) #set the date according to the date handler
   
-  #group by Time.data
+  #group by Time
   dataset <- 
     dataset %>% 
-    dplyr::group_by(Time.data, .add = TRUE)
+    dplyr::group_by(Time, .add = TRUE)
   
   #aggregate the data by group
   numeric.handler <- rlang::enexpr(numeric.handler)
@@ -147,17 +161,19 @@ aggregate_Date <- function(dataset,
       dplyr::across(dplyr::where(is.logical), !!logical.handler), #default:  average a binary outcome
       dplyr::across(dplyr::where(is.factor), !!factor.handler), #default: choose the dominant factor
       dplyr::across(dplyr::where(lubridate::is.POSIXct), !!datetime.handler), #default: choose the mean datetime
+      dplyr::across(dplyr::where(lubridate::is.duration), !!duration.handler), #default: choose the mean date
+      dplyr::across(dplyr::where(hms::is_hms), !!time.handler), #default: choose the mean date
       #allow for additional functions
       .groups = "keep") %>% 
-    dplyr::ungroup(Time.data) #remove the rounded Datetime group
+    dplyr::ungroup(Time) #remove the rounded Datetime group
     
   #bringing Date and Time together for the final output
   dataset <- 
     dataset %>% 
-    dplyr::mutate(!!Datetime.colname.str := paste(Date.data, Time.data) %>% 
+    dplyr::mutate(!!Datetime.colname.str := paste(Date.data, Time) %>% 
                     lubridate::as_datetime(tz = timezone),
                   .after = Date.data) %>% 
-    dplyr::select(-Date.data, -Time.data)
+    dplyr::select(-Date.data, -Time)
   
   # Return ----------------------------------------------------------
   

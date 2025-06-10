@@ -109,7 +109,7 @@ compare_threshold <- function(Light.vector,
   }
   else{
     threshold <- sort(threshold)
-    out <- Light.vector >= threshold[1] & Light.vector <= threshold[2]
+    out <- Light.vector >= threshold[1] & Light.vector < threshold[2]
   }
   
   if(na.replace){
@@ -227,7 +227,7 @@ epoch_list <- function(dataset = dataset,
   epochs <- dataset %>% dominant_epoch(Datetime.colname = {{ Datetime.colname }})
   
   #if the user specified an epoch, use that instead
-  if(epoch != "dominant.epoch") {
+  if(as.character(epoch) != "dominant.epoch") {
     epochs <- 
       epochs %>% dplyr::mutate(dominant.epoch = lubridate::as.duration(epoch))
   }
@@ -244,4 +244,23 @@ get_ggplot_axis_type <- function(ggplot_obj, axis){
   
     axis_type$get_transformation()[[1]]
   
+}
+
+#' Create a reverse transformation function specifically for date scales
+#'
+#' This helper function is exclusive for [gg_heatmap()], to get a reversed date
+#' sequence.
+#'
+#' @returns a transformation function
+#' @export
+#' @source from https://github.com/tidyverse/ggplot2/issues/4014
+#'
+#' @examples
+#' reverse2_trans()
+reverse2_trans <- function() {
+  scales::trans_new(
+    "reverse2",
+    function(x) -1 * as.numeric(x), # Force values to be numeric for Date objects
+    function(x) -1 * as.numeric(x)
+  )
 }
