@@ -1,3 +1,17 @@
+# LightLogR 0.10.3
+
+* `LYS` import now works with any timestamp column in raw data, as long as it starts with `timestamp`
+
+# LightLogR 0.10.2
+
+* `add_states()` no longer creates duplicate observations at identical start/endpoints. The default behavior is now that the `start` is inclusive and `end` is exclusive. Adjust the new `bounds` argument for more options.
+
+# LightLogR 0.10.1
+
+* `extract_metric()` give more helpful error messages when using a base dataset without start/end columns.
+
+* `mean_daily()` can output the number of days that factor into the calculations by setting `.n = TRUE`.
+
 # LightLogR 0.10.0 **High noon**
 
 ## General improvements and new functions
